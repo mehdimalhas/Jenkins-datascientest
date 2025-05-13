@@ -1,31 +1,17 @@
 pipeline {
     agent any
-    environment { 
-      DOCKER_ID = "dstdockerhub"
-      DOCKER_IMAGE = "datascientestapi"
-      DOCKER_TAG = "v.${BUILD_ID}.0" 
-    }
     stages {
-        stage('Building') {
-            steps {
-                  sh 'pip install -r requirements.txt'
-            }
-        }
-        stage('Testing') {
-            steps {
-                  sh 'python -m unittest'
-            }
-        }
-          stage('Deploying') {
-          steps{
-                script {
-              sh '''
-              docker rm -f jenkins
-              docker build -t $DOCKER_ID/$DOCKER_IMAGE:$DOCKER_TAG .
-              docker run -d -p 8000:8000 --name jenkins $DOCKER_ID/$DOCKER_IMAGE:$DOCKER_TAG
-              '''
+        stage ('build') {
+            input{
+                message "Press Ok to continue Datascientest"
+                submitter "user1,user2"
+                parameters {
+                    string(name:'username', defaultValue: 'user', description: 'Username of the user  pressing Ok')
                 }
-          }
+    }
+    steps {
+        echo "User: ${username} said Ok."
+    }
         }
     }
 }
