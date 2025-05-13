@@ -1,16 +1,31 @@
 pipeline {
     agent any
+    environment { 
+      DOCKER_ID = "dstdockerhub"
+      DOCKER_IMAGE = "datascientestapi"
+      DOCKER_TAG = "v.${BUILD_ID}.0" 
+    }
     stages {
-        stage('Test') {
+        stage('Building') {
             steps {
-                echo 'Testing schools'
-                script {
-                    def schools = ['Datascientest', 'DevUniversity']
-                    for (int i = 0; i < schools.size(); ++i) {
-                        echo "Testing the ${schools[i]} school"
-                    }
-                }
+                  sh 'pip install -r requirements.txt'
             }
+        }
+        stage('Testing') {
+            steps {
+                  sh 'python -m unittest'
+            }
+        }
+          stage('Deploying') {
+          steps{
+                script {
+              sh '''
+              docker rm -f jenkins
+              docker build -t $DOCKER_ID/$DOCKER_IMAGE:$DOCKER_TAG .
+              docker run -d -p 8000:8000 --name jenkins $DOCKER_ID/$DOCKER_IMAGE:$DOCKER_TAG
+              '''
+                }
+          }
         }
     }
 }
