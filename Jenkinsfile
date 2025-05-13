@@ -1,46 +1,24 @@
 pipeline {
     agent any
-
-    environment {
-        SHOOL = "datascientest"
-        NAME = "Anthony"
+    environment { 
+    DOCKER_ID = "dstdockerhub"
+    DOCKER_IMAGE = "datascientestapi"
+    DOCKER_TAG = "v.${BUILD_ID}.0" 
     }
-
     stages {
-        stage("Env Variables") {
-            environment {
-                NAME = "lewis" // overrides pipeline level NAME env variable
-                BUILD_ID = "2" // overrides the default BUILD_ID
-            }
-
+        stage('Building') {
             steps {
-                echo "SHOOL = ${env.SHOOL}" // prints "SHOOL = bar"
-                echo "NAME = ${env.NAME}" // prints "NAME = lewis"
-                echo "BUILD_ID =  ${env.BUILD_ID}" // prints "BUILD_ID = 2"
-
-                script {
-                    env.SOMETHING = "1" // creates env.SOMETHING variable
-                }
+                  sh 'pip install -r requirements.txt'
             }
         }
-
-        stage("Override Variables") {
+        stage('Testing') {
             steps {
-                script {
-                    env.SHOOL = "I LOVE DATASCIENTEST!" // it can't override env.SHOOL declared at the pipeline (or stage) level
-                    env.SOMETHING = "2" // it can override env variable created imperatively
-                }
+                  sh 'python -m unittest'
+            }
+        }
+          stage('Deploying') {
+            steps{
 
-                echo "SHOOL = ${env.SHOOL}" // prints "SHOOL = bar"
-                echo "SOMETHING = ${env.SOMETHING}" // prints "SOMETHING = 2"
-
-                withEnv(["SHOOL=DEV UNIVERSITY"]) { // it can override any env variable
-                    echo "SHOOL = ${env.SHOOL}" // prints "SHOOL = DEV UNIVERSITY"
-                }
-
-                withEnv(["BUILD_ID=1"]) {
-                    echo "BUILD_ID = ${env.BUILD_ID}" // prints "BUILD_ID = 1"
-                }
             }
         }
     }
